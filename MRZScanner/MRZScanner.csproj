@@ -40,7 +40,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-		<PackageReference Include="Dynamsoft.CaptureVisionBundle.Maui" Version="2.6.1000" />
+		<PackageReference Include="Dynamsoft.CaptureVisionBundle.Maui" Version="2.6.1001" />
 		<PackageReference Include="Dynamsoft.MRZ.Maui" Version="3.4.201" />
 	</ItemGroup>
 </Project>
