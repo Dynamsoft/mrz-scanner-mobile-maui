@@ -1,15 +1,15 @@
 # Dynamsoft MRZ Scanner for MAUI edition
 
-This repository contains a sample that demonstrates how to use the [Dynamsoft Capture Vision MAUI SDK](https://www.dynamsoft.com/capture-vision/docs/mobile/programming/maui/) to scan and extract information from passports and ID cards.
+This repository contains a sample that demonstrates how to use the [Dynamsoft MRZSCanner MAUI SDK](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/) to scan and extract information from passports and ID cards.
 
-- [User Guide](https://www.dynamsoft.com/capture-vision/docs/mobile/programming/maui/user-guide/mrz.html)
-- [API Reference](https://www.dynamsoft.com/capture-vision/docs/mobile/programming/maui/api-reference/)
+- [User Guide](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/user-guide/index.html)
+- [API Reference](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/api-reference/)
   
 ## System Requirements
 
 ### .Net
 
-- .NET 7.0 and above.
+- .NET 8.0 and above.
 
 ### Android
 
@@ -20,7 +20,7 @@ This repository contains a sample that demonstrates how to use the [Dynamsoft Ca
 
 ### iOS
 
-- Supported OS: **iOS 11.0** or higher.
+- Supported OS: **iOS 13.0** or higher.
 - Supported ABI: **arm64** and **x86_64**.
 - Development Environment: Visual Studio 2022 for Mac and Xcode 14.3+.
 
@@ -28,11 +28,11 @@ This repository contains a sample that demonstrates how to use the [Dynamsoft Ca
 
 | Sample Name | Description |
 | ----------- | ----------- |
-| `MRZScanner` | This sample demonstrates how to scan the MRZ section of a passport or ID card and extract the holder's information.|
+| `ScanMRZ` | This sample demonstrates how to scan the MRZ section of a passport or ID card and extract the holder's information.|
 
 ## Installation
 
-- [Install the SDK](https://www.dynamsoft.com/capture-vision/docs/mobile/programming/maui/user-guide/mrz.html#installation)
+- [Install the SDK](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/user-guide/index.html#installation)
 
 ## License
 
