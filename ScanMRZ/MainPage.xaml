@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ScanMRZ.MainPage">
+
+    <Grid RowDefinitions="*,Auto" Padding="10">
+        <CollectionView Grid.Row="0"
+                        ItemsSource="{Binding TableItems}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <VerticalStackLayout Padding="5">
+                        <Label Text="{Binding Key}"
+                               FontAttributes="Bold"
+                               FontSize="16"
+                               TextColor="Black" />
+                        <BoxView HeightRequest="1"
+                                 BackgroundColor="LightGray"
+                                 Margin="0,3"/>
+                        <Label Text="{Binding Value}"
+                               FontSize="14"
+                               TextColor="Gray" />
+                        <BoxView HeightRequest="1"
+                                 BackgroundColor="LightGray"
+                                 Margin="0,3"/>
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="1"
+                x:Name="ScanBtn"
+                Text="Scan MRZ"
+                Clicked="OnScanMRZ"
+                HorizontalOptions="Fill"
+                VerticalOptions="End"
+                Margin="0,10,0,0" />
+    </Grid>
+</ContentPage>
