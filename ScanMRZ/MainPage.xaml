@@ -1,38 +1,164 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="ScanMRZ.MainPage">
+             x:Class="ScanMRZ.MainPage"
+             BackgroundColor="#1A1A1A">
 
-    <Grid RowDefinitions="*,Auto" Padding="10">
-        <CollectionView Grid.Row="0"
-                        ItemsSource="{Binding TableItems}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <VerticalStackLayout Padding="5">
-                        <Label Text="{Binding Key}"
-                               FontAttributes="Bold"
-                               FontSize="16"
-                               TextColor="Black" />
-                        <BoxView HeightRequest="1"
-                                 BackgroundColor="LightGray"
-                                 Margin="0,3"/>
-                        <Label Text="{Binding Value}"
-                               FontSize="14"
-                               TextColor="Gray" />
-                        <BoxView HeightRequest="1"
-                                 BackgroundColor="LightGray"
-                                 Margin="0,3"/>
+    <Grid RowDefinitions="*,Auto" Padding="0">
+
+        <!-- Result content, hidden initially -->
+        <ScrollView Grid.Row="0" x:Name="ResultView" IsVisible="False">
+            <VerticalStackLayout Padding="20,20,20,10" Spacing="0">
+
+                <!-- Header: Name, Info, Portrait -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+                    <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="4">
+                        <Label x:Name="LblName" FontSize="22" FontAttributes="Bold" TextColor="White" />
+                        <Label x:Name="LblSexAge" FontSize="14" TextColor="#AAAAAA" />
+                        <Label x:Name="LblExpiry" FontSize="14" TextColor="#AAAAAA" />
                     </VerticalStackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                    <Border Grid.Column="1" StrokeShape="RoundRectangle 8"
+                            Stroke="#333333" BackgroundColor="#2A2A2A"
+                            WidthRequest="70" HeightRequest="70">
+                        <Image x:Name="ImgPortrait" Aspect="AspectFill">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                </Grid>
 
+                <!-- Tabs: Processed / Original -->
+                <Grid ColumnDefinitions="*,*" Margin="0,0,0,16">
+                    <Button x:Name="BtnProcessed" Text="Processed"
+                            Clicked="OnProcessedTab"
+                            BackgroundColor="Transparent" TextColor="White"
+                            FontAttributes="Bold" FontSize="14"
+                            BorderWidth="0" CornerRadius="0" />
+                    <Button x:Name="BtnOriginal" Text="Original" Grid.Column="1"
+                            Clicked="OnOriginalTab"
+                            BackgroundColor="Transparent" TextColor="#888888"
+                            FontAttributes="None" FontSize="14"
+                            BorderWidth="0" CornerRadius="0" />
+                </Grid>
+                <!-- Tab underline -->
+                <Grid ColumnDefinitions="*,*" HeightRequest="2" Margin="0,0,0,16">
+                    <Border x:Name="UnderlineProcessed" BackgroundColor="White" StrokeThickness="0" />
+                    <Border x:Name="UnderlineOriginal" Grid.Column="1" BackgroundColor="Transparent" StrokeThickness="0" />
+                </Grid>
+
+                <!-- Document Images (Processed) -->
+                <Grid x:Name="ProcessedImages" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,0,0,20"
+                      HeightRequest="140" IsVisible="True">
+                    <Border x:Name="BorderMrzProcessed" StrokeThickness="0" BackgroundColor="Transparent">
+                        <Image x:Name="ImgMrzProcessed" Aspect="AspectFit">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                    <Border x:Name="BorderOppositeProcessed" Grid.Column="1" StrokeThickness="0" BackgroundColor="Transparent">
+                        <Image x:Name="ImgOppositeProcessed" Aspect="AspectFit">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                </Grid>
+
+                <!-- Document Images (Original) -->
+                <Grid x:Name="OriginalImages" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,0,0,20"
+                      HeightRequest="140" IsVisible="False">
+                    <Border x:Name="BorderMrzOriginal" StrokeThickness="0" BackgroundColor="Transparent">
+                        <Image x:Name="ImgMrzOriginal" Aspect="AspectFit">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                    <Border x:Name="BorderOppositeOriginal" Grid.Column="1" StrokeThickness="0" BackgroundColor="Transparent">
+                        <Image x:Name="ImgOppositeOriginal" Aspect="AspectFit">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                </Grid>
+
+                <!-- Personal Info -->
+                <Label Text="Personal Info" TextColor="White" FontSize="16" FontAttributes="Bold" Margin="0,0,0,10" />
+                <BoxView HeightRequest="1" BackgroundColor="#333333" />
+                <Grid ColumnDefinitions="*,*" Padding="0,10">
+                    <Label Text="Given Name" TextColor="#AAAAAA" FontSize="14" />
+                    <Label x:Name="ValGivenName" Grid.Column="1" TextColor="White" FontSize="14" />
+                </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="#333333" />
+                <Grid ColumnDefinitions="*,*" Padding="0,10">
+                    <Label Text="Surname" TextColor="#AAAAAA" FontSize="14" />
+                    <Label x:Name="ValSurname" Grid.Column="1" TextColor="White" FontSize="14" />
+                </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="#333333" />
+                <Grid ColumnDefinitions="*,*" Padding="0,10">
+                    <Label Text="Date of Birth" TextColor="#AAAAAA" FontSize="14" />
+                    <Label x:Name="ValDob" Grid.Column="1" TextColor="White" FontSize="14" />
+                </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="#333333" />
+                <Grid ColumnDefinitions="*,*" Padding="0,10">
+                    <Label Text="Gender" TextColor="#AAAAAA" FontSize="14" />
+                    <Label x:Name="ValGender" Grid.Column="1" TextColor="White" FontSize="14" />
+                </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="#333333" />
+                <Grid ColumnDefinitions="*,*" Padding="0,10">
+                    <Label Text="Nationality" TextColor="#AAAAAA" FontSize="14" />
+                    <Label x:Name="ValNationality" Grid.Column="1" TextColor="White" FontSize="14" />
+                </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="#333333" Margin="0,0,0,20" />
+
+                <!-- Document Info -->
+                <Label Text="Document Info" TextColor="White" FontSize="16" FontAttributes="Bold" Margin="0,0,0,10" />
+                <BoxView HeightRequest="1" BackgroundColor="#333333" />
+                <Grid ColumnDefinitions="*,*" Padding="0,10">
+                    <Label Text="Doc. Type" TextColor="#AAAAAA" FontSize="14" />
+                    <Label x:Name="ValDocType" Grid.Column="1" TextColor="White" FontSize="14" />
+                </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="#333333" />
+                <Grid ColumnDefinitions="*,*" Padding="0,10">
+                    <Label Text="Doc. Number" TextColor="#AAAAAA" FontSize="14" />
+                    <Label x:Name="ValDocNumber" Grid.Column="1" TextColor="White" FontSize="14" />
+                </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="#333333" />
+                <Grid ColumnDefinitions="*,*" Padding="0,10">
+                    <Label Text="Expiry Date" TextColor="#AAAAAA" FontSize="14" />
+                    <Label x:Name="ValExpiry" Grid.Column="1" TextColor="White" FontSize="14" />
+                </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="#333333" Margin="0,0,0,20" />
+
+                <!-- Raw MRZ Text -->
+                <Label Text="Raw MRZ Text" TextColor="White" FontSize="16" FontAttributes="Bold" Margin="0,0,0,10" />
+                  <Label x:Name="ValMrzText" TextColor="#CCCCCC" FontSize="13"
+                      FontFamily="{OnPlatform Android=monospace, iOS='Courier New', MacCatalyst='Courier New', WinUI=Consolas}"
+                       Margin="0,0,0,20" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Status Label (centered, shown on cancel or error) -->
+        <Label x:Name="LblStatus"
+               Grid.Row="0"
+               IsVisible="False"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               HorizontalTextAlignment="Center"
+               TextColor="#AAAAAA"
+               FontSize="16"
+               Padding="20" />
+
+        <!-- Bottom Button -->
         <Button Grid.Row="1"
                 x:Name="ScanBtn"
                 Text="Scan MRZ"
                 Clicked="OnScanMRZ"
                 HorizontalOptions="Fill"
-                VerticalOptions="End"
-                Margin="0,10,0,0" />
+                Margin="20,10,20,20" />
     </Grid>
 </ContentPage>

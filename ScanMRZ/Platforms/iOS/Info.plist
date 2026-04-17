@@ -31,5 +31,9 @@
 
 	<key>NSCameraUsageDescription</key>
 	<string>Open Camera to Scan MRZ.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Save scanned document images to your photo library.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save scanned document images to your photo library.</string>
 </dict>
 </plist>
