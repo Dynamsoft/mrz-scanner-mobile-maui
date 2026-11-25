@@ -14,7 +14,7 @@
 		<ApplicationTitle>ScanMRZ</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.dynamsoft.scanmrz</ApplicationId>
+		<ApplicationId>com.dynamsoft.maui.scanmrz</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -23,7 +23,7 @@
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
 
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">16.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
@@ -60,9 +60,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dynamsoft.MRZScannerBundle.Maui" Version="3.4.1310" />
+		<PackageReference Include="Dynamsoft.MRZScannerBundle.Maui" Version="3.6.2000" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.14" />
 	</ItemGroup>
 
 </Project>

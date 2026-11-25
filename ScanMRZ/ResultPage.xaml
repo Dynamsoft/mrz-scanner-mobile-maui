@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ScanMRZ.ResultPage"
+             Title="Result"
+             Shell.NavBarIsVisible="True"
+             Shell.BackgroundColor="Black"
+             Shell.ForegroundColor="White"
+             Shell.TitleColor="White"
+             BackgroundColor="Black">
+
+    <ContentPage.Resources>
+        <Style x:Key="SectionHeader" TargetType="Label">
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="Margin" Value="0,24,0,0" />
+        </Style>
+        <Style x:Key="RowCaption" TargetType="Label">
+            <Setter Property="TextColor" Value="#AAAAAA" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style x:Key="RowValue" TargetType="Label">
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontAttributes" Value="Bold" />
+        </Style>
+        <Style x:Key="TabButton" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="BorderWidth" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinimumHeightRequest" Value="0" />
+            <Setter Property="HeightRequest" Value="30" />
+        </Style>
+        <Style x:Key="BottomButton" TargetType="Button">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HeightRequest" Value="48" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="ContentLayout" Value="Left,8" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="*,Auto" Padding="0">
+
+        <!-- Result content -->
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="20,20,20,24" Spacing="0">
+
+                <!-- Header: Name, Info, Portrait -->
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <VerticalStackLayout Grid.Column="0" Spacing="4">
+                        <Label x:Name="LblName" FontSize="24" FontAttributes="Bold" TextColor="White" />
+                        <VerticalStackLayout Spacing="0">
+                            <Label x:Name="LblSexAge" FontSize="14" TextColor="#AAAAAA" />
+                            <Label x:Name="LblExpiry" FontSize="14" TextColor="#AAAAAA" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                    <Image x:Name="ImgPortrait" Grid.Column="1" Aspect="AspectFill"
+                           WidthRequest="88" HeightRequest="100" VerticalOptions="Start"
+                           BackgroundColor="#555555">
+                        <Image.GestureRecognizers>
+                            <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                </Grid>
+
+                <!-- Stands in for the tabs when only one image set came back -->
+                <Label x:Name="LblImagesHeader" Style="{StaticResource SectionHeader}" IsVisible="False" />
+
+                <!-- Tabs: Processed / Original, each with its underline -->
+                <Grid x:Name="ImageTabs" ColumnDefinitions="110,110" ColumnSpacing="16" RowDefinitions="30,2" RowSpacing="2"
+                      HorizontalOptions="Center" Margin="0,24,0,0">
+                    <Button x:Name="BtnProcessed" Text="Processed" Clicked="OnProcessedTab"
+                            Style="{StaticResource TabButton}" TextColor="White" FontAttributes="Bold" />
+                    <Button x:Name="BtnOriginal" Grid.Column="1" Text="Original" Clicked="OnOriginalTab"
+                            Style="{StaticResource TabButton}" TextColor="#888888" FontAttributes="None" />
+                    <Border x:Name="UnderlineProcessed" Grid.Row="1" BackgroundColor="White" StrokeThickness="0" />
+                    <Border x:Name="UnderlineOriginal" Grid.Row="1" Grid.Column="1" BackgroundColor="Transparent" StrokeThickness="0" />
+                </Grid>
+
+                <!-- Document Images (Processed) -->
+                <Grid x:Name="ProcessedImages" ColumnDefinitions="*,*" ColumnSpacing="16" Margin="0,16,0,0"
+                      HeightRequest="160" IsVisible="True">
+                    <Border x:Name="BorderMrzProcessed" StrokeThickness="0" BackgroundColor="Transparent">
+                        <Image x:Name="ImgMrzProcessed" Aspect="AspectFit">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                    <Border x:Name="BorderOppositeProcessed" Grid.Column="1" StrokeThickness="0" BackgroundColor="Transparent">
+                        <Image x:Name="ImgOppositeProcessed" Aspect="AspectFit">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                </Grid>
+
+                <!-- Document Images (Original) -->
+                <Grid x:Name="OriginalImages" ColumnDefinitions="*,*" ColumnSpacing="16" Margin="0,16,0,0"
+                      HeightRequest="160" IsVisible="False">
+                    <Border x:Name="BorderMrzOriginal" StrokeThickness="0" BackgroundColor="Transparent">
+                        <Image x:Name="ImgMrzOriginal" Aspect="AspectFit">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                    <Border x:Name="BorderOppositeOriginal" Grid.Column="1" StrokeThickness="0" BackgroundColor="Transparent">
+                        <Image x:Name="ImgOppositeOriginal" Aspect="AspectFit">
+                            <Image.GestureRecognizers>
+                                <PointerGestureRecognizer PointerPressed="OnImagePointerPressed" PointerReleased="OnImagePointerReleased" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Border>
+                </Grid>
+
+                <!-- Personal Info -->
+                <Label Text="Personal Info" Style="{StaticResource SectionHeader}" />
+                <VerticalStackLayout Spacing="12" Margin="0,12,0,0">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Label Text="Given Name" Style="{StaticResource RowCaption}" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Label x:Name="ValGivenName" Style="{StaticResource RowValue}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Label Text="Surname" Style="{StaticResource RowCaption}" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Label x:Name="ValSurname" Style="{StaticResource RowValue}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Label Text="Date of Birth" Style="{StaticResource RowCaption}" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Label x:Name="ValDob" Style="{StaticResource RowValue}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Label Text="Gender" Style="{StaticResource RowCaption}" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Label x:Name="ValGender" Style="{StaticResource RowValue}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Label Text="Nationality" Style="{StaticResource RowCaption}" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Label x:Name="ValNationality" Style="{StaticResource RowValue}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+
+                <!-- Document Info -->
+                <Label Text="Document Info" Style="{StaticResource SectionHeader}" />
+                <VerticalStackLayout Spacing="12" Margin="0,12,0,0">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Label Text="Doc. Type" Style="{StaticResource RowCaption}" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Label x:Name="ValDocType" Style="{StaticResource RowValue}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Label Text="Doc. Number" Style="{StaticResource RowCaption}" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Label x:Name="ValDocNumber" Style="{StaticResource RowValue}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Label Text="Expiry Date" Style="{StaticResource RowCaption}" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Label x:Name="ValExpiry" Style="{StaticResource RowValue}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+
+                <!-- Raw MRZ Text -->
+                <Label Text="Raw MRZ Text" Style="{StaticResource SectionHeader}" />
+                <HorizontalStackLayout Spacing="8" Margin="0,12,0,0">
+                    <Label x:Name="ValMrzText" TextColor="White" FontSize="12"
+                           FontFamily="{OnPlatform Android=monospace, iOS='Courier New', MacCatalyst='Courier New', WinUI=Consolas}" />
+                </HorizontalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Bottom buttons -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="16" Margin="20,0,20,16">
+            <Button Text="Re-scan" ImageSource="rescan.png" Clicked="OnRescan"
+                    Style="{StaticResource BottomButton}" BackgroundColor="#33FFFFFF" TextColor="White" />
+            <Button Grid.Column="1" Text="Return home" ImageSource="return_home.png" Clicked="OnReturnHome"
+                    Style="{StaticResource BottomButton}" BackgroundColor="White" TextColor="Black" />
+        </Grid>
+    </Grid>
+</ContentPage>

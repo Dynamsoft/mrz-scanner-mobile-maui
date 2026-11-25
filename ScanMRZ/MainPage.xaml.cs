@@ -2,298 +2,116 @@
 
 namespace ScanMRZ;
 
+// Home page: runs the scanner, opens ResultPage for a finished scan and reports anything else here.
 public partial class MainPage : ContentPage
 {
-    private const string PortraitPlaceholderImage = "portrait_placeholder.jpg";
-    private readonly Dictionary<string, ImageSource?> _imageMap = new();
-    private bool _isPortraitPlaceholderShown;
+    // Android can destroy and rebuild this page while the scanner is open (e.g. under memory pressure),
+    // so a new result waits here until a page that is still on screen can show it.
+    private static MRZScanResult? _pendingResult;
+    private static event Action? PendingResultChanged;
 
     public MainPage()
     {
         InitializeComponent();
     }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        PendingResultChanged += ShowPendingResult;
+        ShowPendingResult();
+    }
+
+    protected override void OnDisappearing()
+    {
+        PendingResultChanged -= ShowPendingResult;
+        base.OnDisappearing();
+    }
+
     private async void OnScanMRZ(object sender, EventArgs e)
     {
-        // Initialize the license.
-        // The license string here is a trial license. Note that network connection is required for this license to work.
-        // You can request an extension via the following link: https://www.dynamsoft.com/customer/license/trialLicense?product=cvs&utm_source=samples&package=mobile
+        LblStatus.IsVisible = false;
+        BtnOpenSettings.IsVisible = false;
+        await ScanAsync();
+    }
+
+    // Also run by ResultPage's Re-scan button once it is back on this page.
+    internal static async Task ScanAsync()
+    {
+        // A trial license, so it needs a network connection. Request your own at
+        // https://www.dynamsoft.com/customer/license/trialLicense/?product=mrz&utm_source=samples&package=maui
         var config = new MRZScannerConfig("DLS2eyJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSJ9");
-        var result = await MRZScanner.Start(config);
 
-        if (result.ResultStatus == EnumResultStatus.Finished && result.Data is not null)
-        {
-            LblStatus.IsVisible = false;
-            PopulateResult(result);
-        }
-        else if (result.ResultStatus == EnumResultStatus.Canceled)
-        {
-            ResultView.IsVisible = false;
-            LblStatus.Text = "Scan canceled";
-            LblStatus.IsVisible = true;
-        }
-        else
-        {
-            ResultView.IsVisible = false;
-            LblStatus.Text = result.ErrorString ?? "Unknown error";
-            LblStatus.IsVisible = true;
-        }
+        // Every setting below is commented out at the opposite of its default — uncomment to try.
+
+        // Restrict recognition to one document family. Default is EnumDocumentType.All, which reads both.
+        //config.DocumentType = EnumDocumentType.Passport;
+        // Your own Capture Vision template (app asset, path or inline JSON); outranks DocumentType.
+        //config.TemplateFile = "MyTemplate.json";
+
+        // Scanner controls. Every one of these is visible by default.
+        //config.IsCloseButtonVisible = false;        // Leaves no way out of the scanner.
+        //config.IsTorchButtonVisible = false;        // Hides the torch toggle.
+        //config.IsCameraToggleButtonVisible = false; // Hides the front/back camera toggle.
+        //config.IsBeepButtonVisible = false;         // Hides the beep toggle.
+        //config.IsVibrateButtonVisible = false;      // Hides the vibrate toggle.
+        //config.IsFormatSelectorVisible = false;     // Hides the ID / Both / Passport selector.
+        //config.IsGuideFrameVisible = false;         // Hides the guide frame and its prompt.
+
+        // Both off by default; the buttons above toggle them, so this is just the opening state.
+        //config.IsBeepEnabled = true;
+        //config.IsVibrateEnabled = true;
+
+        // Crops come back by default, the full camera frame does not.
+        //config.ReturnDocumentImage = false;
+        //config.ReturnPortraitImage = false;
+        //config.ReturnOriginalImage = true;
+
+        // Suppress the scanner's own permission dialog; either way it arrives as EnumResultStatus.Exception.
+        //config.IsCameraPermissionPromptEnabled = false;
+
+        _pendingResult = await MRZScanner.Start(config);
+        PendingResultChanged?.Invoke();
     }
 
-    private void PopulateResult(MRZScanResult result)
+    private async void ShowPendingResult()
     {
-        var data = result.Data!;
-
-        // Header
-        LblName.Text = $"{data.FirstName} {data.LastName}";
-        LblSexAge.Text = $"{char.ToUpper(data.Sex[0])}{data.Sex[1..].ToLower()}, {data.Age} years old";
-        LblExpiry.Text = $"Expiry: {data.DateOfExpire}";
-
-        // Portrait
-        try
+        // A page whose window went away with the old Android activity leaves the result to its replacement.
+        if (Window is not { } window || Application.Current?.Windows.Contains(window) != true)
         {
-            var portrait = result.GetPortraitImage();
-            _isPortraitPlaceholderShown = portrait is null;
-            var src = portrait?.ToImageSource() ?? ImageSource.FromFile(PortraitPlaceholderImage);
-            ImgPortrait.Source = src;
-            _imageMap[nameof(ImgPortrait)] = src;
-        }
-        catch
-        {
-            _isPortraitPlaceholderShown = true;
-            var placeholder = ImageSource.FromFile(PortraitPlaceholderImage);
-            ImgPortrait.Source = placeholder;
-            _imageMap[nameof(ImgPortrait)] = placeholder;
-        }
-
-        // Document images
-        SetImage(ImgMrzProcessed, () => result.GetDocumentImage(EnumDocumentSide.MRZ)?.ToImageSource());
-        SetImage(ImgOppositeProcessed, () => result.GetDocumentImage(EnumDocumentSide.Opposite)?.ToImageSource());
-        SetImage(ImgMrzOriginal, () => result.GetOriginalImage(EnumDocumentSide.MRZ)?.ToImageSource());
-        SetImage(ImgOppositeOriginal, () => result.GetOriginalImage(EnumDocumentSide.Opposite)?.ToImageSource());
-
-        // Adjust image grid layout based on available images
-        AdjustImageGrid(ProcessedImages, ImgMrzProcessed, BorderMrzProcessed, ImgOppositeProcessed, BorderOppositeProcessed);
-        AdjustImageGrid(OriginalImages, ImgMrzOriginal, BorderMrzOriginal, ImgOppositeOriginal, BorderOppositeOriginal);
-
-        // Personal Info
-        ValGivenName.Text = data.FirstName;
-        ValSurname.Text = data.LastName;
-        ValDob.Text = data.DateOfBirth;
-        ValGender.Text = $"{char.ToUpper(data.Sex[0])}{data.Sex[1..].ToLower()}";
-        ValNationality.Text = data.NationalityRaw;
-
-        // Document Info
-        ValDocType.Text = data.DocumentType switch
-        {
-            "MRTD_TD1_ID" => "ID (TD1)",
-            "MRTD_TD2_ID" => "ID (TD2)",
-            "MRTD_TD3_PASSPORT" => "Passport (TD3)",
-            _ => data.DocumentType
-        };
-        ValDocNumber.Text = data.DocumentNumber;
-        ValExpiry.Text = data.DateOfExpire;
-
-        // Raw MRZ Text
-        ValMrzText.Text = data.MrzText;
-
-        // Show result
-        ResultView.IsVisible = true;
-    }
-
-    private void SetImage(Image imageView, Func<ImageSource?> getSource)
-    {
-        try
-        {
-            var src = getSource();
-            imageView.Source = src;
-            _imageMap[imageView.StyleId ?? imageView.GetHashCode().ToString()] = src;
-        }
-        catch { }
-    }
-
-    private static void AdjustImageGrid(Grid grid, Image imgFirst, Border borderFirst, Image imgSecond, Border borderSecond)
-    {
-        bool hasFirst = imgFirst.Source is not null;
-        bool hasSecond = imgSecond.Source is not null;
-
-        if (hasFirst && hasSecond)
-        {
-            // Two images: two-column layout (default)
-            grid.ColumnDefinitions = new ColumnDefinitionCollection
-            {
-                new ColumnDefinition(GridLength.Star),
-                new ColumnDefinition(GridLength.Star)
-            };
-            grid.HeightRequest = 140;
-            borderFirst.SetValue(Grid.ColumnProperty, 0);
-            borderFirst.SetValue(Grid.ColumnSpanProperty, 1);
-            borderSecond.IsVisible = true;
-        }
-        else
-        {
-            // One image: full width, taller
-            grid.ColumnDefinitions = new ColumnDefinitionCollection
-            {
-                new ColumnDefinition(GridLength.Star)
-            };
-            grid.HeightRequest = 200;
-
-            if (hasFirst)
-            {
-                borderFirst.SetValue(Grid.ColumnProperty, 0);
-                borderFirst.SetValue(Grid.ColumnSpanProperty, 1);
-                borderSecond.IsVisible = false;
-            }
-            else if (hasSecond)
-            {
-                borderSecond.SetValue(Grid.ColumnProperty, 0);
-                borderSecond.SetValue(Grid.ColumnSpanProperty, 1);
-                borderFirst.IsVisible = false;
-            }
-            else
-            {
-                borderFirst.IsVisible = false;
-                borderSecond.IsVisible = false;
-                grid.HeightRequest = 0;
-            }
-        }
-    }
-
-    private CancellationTokenSource? _longPressCts;
-    private Image? _pressedImage;
-    private static readonly TimeSpan LongPressDuration = TimeSpan.FromMilliseconds(500);
-
-    private void OnImagePointerPressed(object? sender, PointerEventArgs e)
-    {
-        if (sender is not Image image || image.Source is null)
+            PendingResultChanged -= ShowPendingResult;
             return;
-
-        if (ReferenceEquals(image, ImgPortrait) && _isPortraitPlaceholderShown)
-            return;
-
-        _pressedImage = image;
-        _longPressCts?.Cancel();
-        _longPressCts = new CancellationTokenSource();
-        var cts = _longPressCts;
-
-        _ = Task.Delay(LongPressDuration, cts.Token).ContinueWith(async t =>
-        {
-            if (t.IsCanceled) return;
-            await MainThread.InvokeOnMainThreadAsync(async () =>
-            {
-                if (_pressedImage != image) return;
-                var save = await DisplayActionSheetAsync("Save image to photo library?", "Cancel", null, "Save");
-                if (save == "Save")
-                    await SaveImageToGalleryAsync(image);
-            });
-        });
-    }
-
-    private void OnImagePointerReleased(object? sender, PointerEventArgs e)
-    {
-        _longPressCts?.Cancel();
-        _longPressCts = null;
-        _pressedImage = null;
-    }
-
-    private async Task SaveImageToGalleryAsync(Image image)
-    {
-        try
-        {
-            var screenshot = await image.CaptureAsync();
-            if (screenshot is null) return;
-
-            using var stream = await screenshot.OpenReadAsync();
-            using var memStream = new MemoryStream();
-            await stream.CopyToAsync(memStream);
-            var bytes = memStream.ToArray();
-
-            var fileName = $"MRZ_{DateTime.Now:yyyyMMdd_HHmmss}.png";
-#if IOS
-            await SaveToGalleryiOS(bytes);
-#elif ANDROID
-            await SaveToGalleryAndroid(bytes, fileName);
-#endif
-            await DisplayAlertAsync("Saved", "Image saved to photo library.", "OK");
         }
-        catch (Exception ex)
+        if (_pendingResult is not { } result) return;
+        _pendingResult = null;
+
+        switch (result.ResultStatus)
         {
-            await DisplayAlertAsync("Error", $"Failed to save image: {ex.Message}", "OK");
+            case EnumResultStatus.Finished when result.Data is not null:
+                await Navigation.PushAsync(new ResultPage(result));
+                break;
+            case EnumResultStatus.Finished:
+                // Nothing to show, so report it here rather than open an empty result page.
+                ShowStatus("Scan returned no data");
+                break;
+            case EnumResultStatus.Canceled:
+                // The user closed the scanner. There is no data and nothing went wrong.
+                ShowStatus("Scan canceled");
+                break;
+            default:
+                ShowStatus(result.ErrorString ?? "");
+                // Only a user denial is fixable in Settings; a restricted camera has no toggle there.
+                BtnOpenSettings.IsVisible = result.ErrorCode == (int)EnumErrorCode.CameraPermissionDenied;
+                break;
         }
     }
 
-#if IOS
-    private static async Task SaveToGalleryiOS(byte[] bytes)
+    private void ShowStatus(string message)
     {
-        // Check / request photo library add permission
-        var status = Photos.PHPhotoLibrary.GetAuthorizationStatus(Photos.PHAccessLevel.AddOnly);
-        if (status == Photos.PHAuthorizationStatus.NotDetermined)
-        {
-            status = await Photos.PHPhotoLibrary.RequestAuthorizationAsync(Photos.PHAccessLevel.AddOnly);
-        }
-
-        if (status != Photos.PHAuthorizationStatus.Authorized && status != Photos.PHAuthorizationStatus.Limited)
-        {
-            throw new UnauthorizedAccessException("Photo library access was denied. Please grant permission in Settings.");
-        }
-
-        var tcs = new TaskCompletionSource<bool>();
-        var uiImage = new UIKit.UIImage(Foundation.NSData.FromArray(bytes));
-        uiImage.SaveToPhotosAlbum((_, error) =>
-        {
-            if (error is not null)
-                tcs.TrySetException(new Exception(error.LocalizedDescription));
-            else
-                tcs.TrySetResult(true);
-        });
-        await tcs.Task;
-    }
-#endif
-
-#if ANDROID
-    private async Task SaveToGalleryAndroid(byte[] bytes, string fileName)
-    {
-        var context = Platform.CurrentActivity ?? Platform.AppContext;
-        var contentValues = new Android.Content.ContentValues();
-        contentValues.Put(Android.Provider.MediaStore.IMediaColumns.DisplayName, fileName);
-        contentValues.Put(Android.Provider.MediaStore.IMediaColumns.MimeType, "image/png");
-        contentValues.Put(Android.Provider.MediaStore.IMediaColumns.RelativePath, "Pictures/ScanMRZ");
-
-        var uri = context.ContentResolver!.Insert(Android.Provider.MediaStore.Images.Media.ExternalContentUri!, contentValues);
-        if (uri is not null)
-        {
-            using var outputStream = context.ContentResolver.OpenOutputStream(uri);
-            if (outputStream is not null)
-            {
-                await outputStream.WriteAsync(bytes, 0, bytes.Length);
-                await outputStream.FlushAsync();
-            }
-        }
-    }
-#endif
-
-    private void OnProcessedTab(object? sender, EventArgs e)
-    {
-        ProcessedImages.IsVisible = true;
-        OriginalImages.IsVisible = false;
-        BtnProcessed.TextColor = Colors.White;
-        BtnProcessed.FontAttributes = FontAttributes.Bold;
-        BtnOriginal.TextColor = Color.FromArgb("#888888");
-        BtnOriginal.FontAttributes = FontAttributes.None;
-        UnderlineProcessed.BackgroundColor = Colors.White;
-        UnderlineOriginal.BackgroundColor = Colors.Transparent;
+        LblStatus.Text = message;
+        LblStatus.IsVisible = true;
     }
 
-    private void OnOriginalTab(object? sender, EventArgs e)
-    {
-        ProcessedImages.IsVisible = false;
-        OriginalImages.IsVisible = true;
-        BtnOriginal.TextColor = Colors.White;
-        BtnOriginal.FontAttributes = FontAttributes.Bold;
-        BtnProcessed.TextColor = Color.FromArgb("#888888");
-        BtnProcessed.FontAttributes = FontAttributes.None;
-        UnderlineOriginal.BackgroundColor = Colors.White;
-        UnderlineProcessed.BackgroundColor = Colors.Transparent;
-    }
+    // The scanner's own permission prompt is gone by the time this shows, so keep a route to Settings.
+    private void OnOpenSettings(object sender, EventArgs e) => AppInfo.ShowSettingsUI();
 }
