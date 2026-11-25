@@ -1,151 +1,164 @@
-# Dynamsoft MRZ Scanner — .NET MAUI Sample (ScanMRZ)
+# Dynamsoft MRZ Scanner for .NET MAUI
 
-This repo hosts **ScanMRZ**, a complete .NET MAUI sample app demonstrating the Dynamsoft MRZ Scanner ready-to-use scanning UI. It scans the Machine Readable Zone (MRZ) on passports and ID cards and renders the parsed fields, captured document images, and portrait photo.
+This repository hosts the .NET MAUI samples for the **Dynamsoft MRZ Scanner** — a ready-to-use scanning component for Android and iOS apps. With minimal setup, a single call to `MRZScanner.Start` from the [`Dynamsoft.MRZScannerBundle.Maui`](https://www.nuget.org/packages/Dynamsoft.MRZScannerBundle.Maui) NuGet package opens the built-in scanner UI, reads the Machine Readable Zone (MRZ) on passports and ID cards, and returns the holder's information when the scanner closes.
 
-The sample is built around `MRZScanner.Start` from the [`Dynamsoft.MRZScannerBundle.Maui`](https://www.nuget.org/packages/Dynamsoft.MRZScannerBundle.Maui) NuGet package, which packages the camera UI, scanning logic, and result delivery into a single launch call.
-
-## Features
-
-- Scans the MRZ on passports and ID cards through the ready-to-use `MRZScanner` UI.
-- Parses the MRZ into structured fields — name, date of birth, document number, expiry, nationality, and more.
-- Returns the portrait image extracted from the document, plus processed and original captures of both the MRZ side and the opposite side.
-
-The full scan flow lives in a single file: [ScanMRZ/MainPage.xaml.cs](ScanMRZ/MainPage.xaml.cs).
-
-## Quick Start
-
-```bash
-# 1. Clone the repo
-git clone https://github.com/Dynamsoft/mrz-scanner-mobile-maui-dev.git
-cd mrz-scanner-mobile-maui-dev/ScanMRZ
-
-# 2. Install the .NET MAUI workload (if you haven't already)
-dotnet workload install maui
-
-# 3. Restore NuGet dependencies
-dotnet restore
-```
-
-All remaining commands in the sections below run from the `ScanMRZ` directory.
-
-> [!IMPORTANT]
-> Both platforms must be run on a **physical device**. The iOS simulator and most Android emulators do not expose a working camera to the SDK.
-
-## Configure Your License
-
-A valid license key is required to use the SDK. The sample ships with a public trial license string in [ScanMRZ/MainPage.xaml.cs:21](ScanMRZ/MainPage.xaml.cs#L21):
-
-```csharp
-var config = new MRZScannerConfig("DLS2eyJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSJ9");
-```
-
-This trial string is time-limited and **requires a network connection**. To request your own 30-day trial, visit [Request a Trial License](https://www.dynamsoft.com/customer/license/trialLicense?product=mrz&utm_source=samples&package=mobile), then replace the license value in `MainPage.xaml.cs` with the key you receive.
-
-## Run the Sample
-
-The sample targets `net10.0-android` and `net10.0-ios`. You can run it from an IDE or the command line.
-
-### iOS
-
-The iOS project must be signed before it will install on a device:
-
-1. Open Xcode and sign in to your Apple Developer account under **Settings → Accounts**.
-2. Ensure a development provisioning profile and signing certificate exist for the app's bundle id (`com.dynamsoft.scanmrz`) and your test device. The simplest way is to let Xcode generate them via **Automatically manage signing** with your team selected and the device connected.
-
-The csproj is already configured for automatic provisioning ([ScanMRZ/ScanMRZ.csproj](ScanMRZ/ScanMRZ.csproj)):
-
-```xml
-<CodesignProvision>Automatic</CodesignProvision>
-<CodesignKey>Apple Development</CodesignKey>
-```
-
-Connect a physical iOS device, then launch using either option below.
-
-**Option A — Run from an IDE.** In VS Code (with the **C# Dev Kit** and **.NET MAUI** extensions) or Visual Studio 2022, select your connected device and start debugging.
-
-**Option B — Run from the command line:**
-
-```bash
-dotnet build -t:Run -f net10.0-ios -p:RuntimeIdentifier=ios-arm64
-```
-
-### Android
-
-Connect a physical Android device with USB debugging enabled, then run:
-
-```bash
-dotnet build -t:Run -f net10.0-android
-```
-
-You can list connected devices with `adb devices`.
+This repo contains two runnable samples that demonstrate launching the scanner, handling results, and displaying the extracted data — from a minimal single-page app up to a complete **`ScanMRZ`** app.
 
 ## Supported Document Types
 
-The SDK supports the three ICAO Machine Readable Travel Document (MRTD) formats:
-
-- **TD1** — ID cards with a 3-line MRZ.
-- **TD2** — ID cards with a 2-line MRZ.
-- **TD3** — passports with a 2-line MRZ.
-
-For support for other MRTD types, contact the [Dynamsoft Support Team](https://www.dynamsoft.com/contact/).
+The SDK recognizes three ICAO Machine Readable Travel Document (MRTD) formats: **TD1** (3-line MRZ ID cards), **TD2** (2-line MRZ ID cards), and **TD3** (2-line MRZ passports). For other MRTD types, contact the [Dynamsoft Support Team](https://www.dynamsoft.com/company/contact/).
 
 ## System Requirements
 
-The toolchain versions below correspond to what this sample is pinned to (**.NET 10**, `Dynamsoft.MRZScannerBundle.Maui` **3.4.1310**). If you adapt the sample to a different .NET version, your SDK, workload, and Xcode requirements are dictated by *that* version — check its release requirements rather than the values here.
+- **.NET 10** SDK or later, with the `maui` workload.
+- **.NET MAUI 10.0.20** or later.
 
-- .NET SDK **10.0** with the `maui` workload installed.
-- **Android**
-  - Supported OS: Android 5.0 (API Level 21) or higher.
-  - Supported ABIs: armeabi-v7a, arm64-v8a, x86, x86_64.
-  - JDK 17.
-- **iOS**
-  - Supported OS: iOS 15.0 or higher.
-  - Supported ABIs: arm64.
-  - Development environment: Xcode 16.1 or higher (a matching .NET-for-iOS SDK is required for newer Xcode releases).
+### Android
 
-## Project Structure
+- Supported OS: **Android 5.0** (API Level 21) or higher.
+- Supported ABI: **armeabi-v7a**, **arm64-v8a**, **x86** and **x86_64**.
+- JDK: **17** or later.
 
+### iOS
+
+- Supported OS: **iOS 16** or higher — required by the Core ML models the scanner ships.
+- Supported ABI: **arm64** (devices); **arm64** and **x86_64** (simulators).
+- Development Environment: a Mac with the Xcode version your .NET iOS workload requires, and its command line tools.
+
+> [!NOTE]
+> Each .NET for iOS release names the Xcode it requires in its [release notes](https://github.com/dotnet/macios/releases). Apple's [Xcode system requirements](https://developer.apple.com/support/xcode/) list the macOS each Xcode needs.
+
+### Development Environment
+
+- **Visual Studio Code** with the **C# Dev Kit** and **.NET MAUI** extensions, on macOS or Windows.
+- **Visual Studio 2026** on Windows. Building for iOS from Windows needs a paired Mac.
+
+### Building the samples in this repository
+
+The requirements above are what the **SDK** needs when you add it to your own app. The samples target `net10.0-android` and `net10.0-ios`, reference `Dynamsoft.MRZScannerBundle.Maui` **3.6.2000** from nuget.org, and take MAUI itself from your .NET SDK's `maui` workload. Both deploy to **iOS 16** and **Android 5.0**, the SDK's own minimums.
+
+## Add the SDK
+
+Add the [`Dynamsoft.MRZScannerBundle.Maui`](https://www.nuget.org/packages/Dynamsoft.MRZScannerBundle.Maui) package to your MAUI app. It brings in the Android and iOS bindings and the Capture Vision packages it depends on:
+
+```bash
+dotnet add package Dynamsoft.MRZScannerBundle.Maui --version 3.6.2000
 ```
-ScanMRZ/
-├── MainPage.xaml                          # Scan button + result UI layout
-├── MainPage.xaml.cs                       # Scan flow + result handling (entire app logic)
-├── App.xaml / AppShell.xaml               # MAUI app + shell entry points
-├── MauiProgram.cs                         # MAUI host builder (fonts, logging)
-├── Platforms/
-│   ├── Android/                           # Android head (AndroidManifest.xml, MainActivity)
-│   └── iOS/                               # iOS head (Info.plist, AppDelegate)
-├── Resources/
-│   └── Images/portrait_placeholder.jpg    # Fallback when no portrait is captured
-└── ScanMRZ.csproj                         # Pinned to Dynamsoft.MRZScannerBundle.Maui 3.4.1310
+
+or, in your `.csproj`:
+
+```xml
+<PackageReference Include="Dynamsoft.MRZScannerBundle.Maui" Version="3.6.2000" />
 ```
 
-## Platform Configuration
+The package supports **Android and iOS** only. The MAUI template's `.csproj` has three `<TargetFrameworks>` lines that also add Mac Catalyst and Windows. Replace all three with this one, as both samples do:
 
-The sample is already configured for both platforms. The notes below explain what is wired up, in case you adapt the sample code into your own project.
+```xml
+<TargetFrameworks>net10.0-android;net10.0-ios</TargetFrameworks>
+```
 
-- **iOS** — [ScanMRZ/Platforms/iOS/Info.plist](ScanMRZ/Platforms/iOS/Info.plist) declares `NSCameraUsageDescription`. Without this, the app would crash the moment the scanner tries to open the camera.
+The SDK also requires **iOS 16** or later. The MAUI 10 template sets the iOS minimum to 15.0 and the build doesn't warn about the difference, so raise it in your `.csproj`:
+
+```xml
+<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">16.0</SupportedOSPlatformVersion>
+```
+
+Then configure each platform:
+
+- **iOS** — declare `NSCameraUsageDescription` in `Platforms/iOS/Info.plist`. Without it, the app is terminated the moment the scanner opens the camera.
 
   ```xml
   <key>NSCameraUsageDescription</key>
   <string>Open Camera to Scan MRZ.</string>
   ```
 
-- **Android** — no manual camera permission changes are required. The SDK's manifest merges the `CAMERA` permission automatically. The trial license needs network access, so the `INTERNET` permission in [ScanMRZ/Platforms/Android/AndroidManifest.xml](ScanMRZ/Platforms/Android/AndroidManifest.xml) is left in place:
+  `ScanMRZ` also declares `NSPhotoLibraryUsageDescription` and `NSPhotoLibraryAddUsageDescription`, because it can save the scanned images to Photos. You only need them if your app does the same.
+
+- **Android** — no manual camera setup is needed: the SDK's manifest merges the `CAMERA` permission into your app. The license is verified online, so keep the `INTERNET` permission that the MAUI template already declares in `Platforms/Android/AndroidManifest.xml`:
 
   ```xml
   <uses-permission android:name="android.permission.INTERNET" />
   ```
 
-## Documentation
+For full details, see [Add the SDK](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/user-guide/index.html#step-2-add-the-sdk) in the user guide.
 
-- **[User Guide](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/user-guide/index.html)** — step-by-step walkthrough of building an MRZ scanning app with the MAUI SDK from scratch.
-- **[Customization Guide](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/user-guide/customize-mrz-scanner.html)** — deeper customization of `MRZScannerConfig`, including document-type filtering, UI button visibility, and image capture settings.
-- **[API Reference](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/api-reference/)** — full type definitions for `MRZScanner`, `MRZScannerConfig`, `MRZScanResult`, and `MRZData`.
+## Samples
 
-## Support
+### ScanMRZBasic
 
-For help, integration questions, or custom requirements, contact the [Dynamsoft Support Team](https://www.dynamsoft.com/contact/).
+The smallest app that scans an MRZ and shows the data — one page that launches the scanner, handles all three result statuses, and lists the parsed fields, any fields that failed their check digits, and the raw MRZ text. It is the MAUI project template plus a single page: the whole integration is in [ScanMRZBasic/MainPage.xaml.cs](ScanMRZBasic/MainPage.xaml.cs), about 50 lines. Start here if you are integrating the SDK for the first time.
+
+### ScanMRZ
+
+A complete end-to-end app that scans the MRZ on a passport or ID card and displays the extracted holder information, document images, and raw MRZ text. On top of what `ScanMRZBasic` covers, it adds:
+
+- A separate result page with the portrait and the processed document images. Turn on `ReturnOriginalImage` and the full camera frames appear in a second tab.
+- Per-field validation: fields that fail their check digits are marked, and tapping one explains the warning.
+- Saving images: long-press an image to save it to Photos (iOS) or the gallery (Android 10 or later).
+- Camera-permission recovery: if the camera is denied, the home page shows the error with an **Open Settings** button.
+- Every `MRZScannerConfig` option, commented out at the opposite of its default in [ScanMRZ/MainPage.xaml.cs](ScanMRZ/MainPage.xaml.cs) — uncomment one to try it.
+
+The scan flow and configuration are in [ScanMRZ/MainPage.xaml.cs](ScanMRZ/MainPage.xaml.cs); the result display is in [ScanMRZ/ResultPage.xaml.cs](ScanMRZ/ResultPage.xaml.cs).
+
+Each sample declares its own application ID / bundle identifier (`com.dynamsoft.maui.scanmrzbasic` and `com.dynamsoft.maui.scanmrz`), so you can install them side by side on one device and compare them.
+
+A physical device is required to run either sample — the iOS simulator and most Android emulators do not expose a camera to the SDK.
+
+## Run the Samples
+
+```bash
+git clone https://github.com/Dynamsoft/mrz-scanner-mobile-maui.git
+cd mrz-scanner-mobile-maui
+
+# Once per machine, if the MAUI workload isn't installed yet (on macOS you may need sudo)
+dotnet workload install maui
+```
+
+**iOS signing.** The app must be signed before it installs on an iPhone. Sign in to your Apple Developer account in Xcode under **Settings → Accounts**, and make sure a development certificate and provisioning profile exist for the sample's bundle identifier and your device. The simplest way is to let Xcode create them through **Automatically manage signing**, with your team selected and the device connected.
+
+### From an IDE
+
+- **Visual Studio Code** — open the repository folder. Choose the sample with **.NET MAUI: Select Startup Project** in the Command Palette (the run configuration's name does not change it), pick your device with **.NET MAUI: Select Startup Device**, then start debugging. Alternatively, open a sample's own folder, which has only one project to start.
+- **Visual Studio 2026** — open the sample's `.csproj`, select your connected device, then start debugging.
+
+### From the command line
+
+Run these from the sample's folder, for example `cd ScanMRZ`.
+
+**Android** — connect a device with USB debugging enabled (`adb devices` lists it), then run:
+
+```bash
+dotnet build -t:Run -f net10.0-android
+```
+
+**iOS** — connect the iPhone, build, then run:
+
+```bash
+dotnet build -f net10.0-ios -p:RuntimeIdentifier=ios-arm64
+dotnet build -t:Run -f net10.0-ios -p:RuntimeIdentifier=ios-arm64
+```
+
+With more than one device connected, add `-p:_DeviceName=<UDID>` to the run command. `xcrun xctrace list devices` shows each device's UDID in parentheses.
 
 ## License
 
-See [LICENSE.md](LICENSE.md). The sample code in this repository is distributed under the terms of the [Dynamsoft Software License Agreement](https://www.dynamsoft.com/company/license-agreement/).
+A valid license key is required to use the SDK. Both samples ship with a time-limited public trial license, which needs a network connection, passed to `MRZScannerConfig` in [ScanMRZ/MainPage.xaml.cs](ScanMRZ/MainPage.xaml.cs) and [ScanMRZBasic/MainPage.xaml.cs](ScanMRZBasic/MainPage.xaml.cs):
+
+```csharp
+var config = new MRZScannerConfig("DLS2eyJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSJ9");
+```
+
+To use your own, request a free 30-day trial via the [Request a Trial License](https://www.dynamsoft.com/customer/license/trialLicense/?product=mrz&utm_source=samples&package=maui) link and replace that string. For production license setup, see the [License Activation guide](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/user-guide/license-activation.html).
+
+The sample code itself is distributed under the terms in [LICENSE.md](LICENSE.md).
+
+## Documentation
+
+- [User Guide](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/user-guide/index.html) — build an MRZ scanning app with the MAUI SDK step by step.
+- [Customization Guide](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/user-guide/customize-mrz-scanner.html) — configure the scanner through `MRZScannerConfig`: document types, UI controls, and returned images.
+- [API Reference](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/api-reference/) — `MRZScanner`, `MRZScannerConfig`, `MRZScanResult`, `MRZData`, and the enums they use.
+- [Release Notes](https://www.dynamsoft.com/mrz-scanner/docs/mobile/programming/maui/release-notes/maui-3.html)
+
+## Contact Us
+
+For any questions or feedback, you can either [contact us](https://www.dynamsoft.com/company/contact/) or [submit an issue](https://github.com/Dynamsoft/mrz-scanner-mobile-maui/issues/new).
